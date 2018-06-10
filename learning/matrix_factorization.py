@@ -1,7 +1,7 @@
 import numpy as np
 import random
 class MF():
-    def __init__(self, k=10, tol=1e-3,max_iter=30,alpha=0.002,gamma=0.001):
+    def __init__(self, k=10, tol=1e-3,max_iter=100,alpha=0.002,gamma=0.0001):
         self.k=k
         self.tol=tol
         self.max_iter=max_iter
@@ -14,8 +14,6 @@ class MF():
         self.X =   np.copy(aX)
         self.P = np.random.rand(self.k, self.X.shape[0])
         self.Q = np.random.rand(self.k, self.X.shape[1])
-        print(self.P)
-        print(self.Q)
         
         # 学習部分
         for i in range(self.max_iter):
@@ -23,16 +21,12 @@ class MF():
             # 二乗誤差出力
             # print("step:"+str(i)+" error:"+str(self.error))
             if (self.error < self.tol):
-                print("収束"+"二乗誤差:"+str(self.error))
+                print("収束，"+"二乗誤差:"+str(self.error))
                 return np.dot(self.P.T, self.Q)
-            self.update()
+            self.__update()
 
-        print("収束しなかった"+"二乗誤差:"+str(self.error))
+        print("iter終了，"+"二乗誤差:"+str(self.error))
         return np.dot(self.P.T, self.Q)
-    
-
-    def echo(self):
-        print("MF!")
     
     def __error(self):
         tPtQ = np.dot(self.P.T, self.Q)
@@ -46,10 +40,8 @@ class MF():
         self.error = tEr + tReg    
         return self.error
         
-    
-        
     # p,qの更新
-    def update(self):
+    def __update(self):
         tPtQ = np.dot(self.P.T, self.Q)
         tE = self.X - tPtQ
         for u in range(self.P.shape[1]):
