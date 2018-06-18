@@ -20,6 +20,10 @@ if __name__ == '__main__':
     tK= 40
     tK = int(args[2])
 
+    tMF = True
+    if args[3] == 'NMF':
+        tMF = False
+
     # データロード
     df = pd.read_table(tDataPath)
     # print(df)
@@ -59,48 +63,54 @@ if __name__ == '__main__':
     tR = tX.shape[1]
     tMin = min(tC, tR)
 
+    if tMF == True:
 
-    tMF = matrix_factorization.MF(k=tK,tol=1e-4)
-    # tNMF = non_negative_matrix_factorization.NMF(k=tK,tol=1e-2)
-    # 学習
-    tStart_mf=time.time()
-    tLearned_mf=tMF.fit(tX)
-    tEnd_mf=time.time()
-    print('MF学習時間:'+str(tEnd_mf-tStart_mf))
+        tMF = matrix_factorization.MF(k=tK,tol=1e-3)
+        # 学習
+        tStart_mf=time.time()
+        tLearned_mf=tMF.fit(tX)
+        tEnd_mf=time.time()
+        print('MF学習時間:'+str(tEnd_mf-tStart_mf))
 
-    # tStart_nmf=time.time()
-    # tLearned_nmf=tNMF.fit(tX)
-    # tEnd_nmf=time.time()
-    # print('NMF学習時間:' + str(tEnd_nmf - tStart_nmf))
+        tLearned_mf_Frame=pd.DataFrame(tLearned_mf, columns=item_ids, index=user_ids)
 
+        # テスト誤差計算
+        # 辞書に保存しておいた値にアクセス
+        tTest_error_mf=0
 
-    tLearned_mf_Frame=pd.DataFrame(tLearned_mf, columns=item_ids, index=user_ids)
-    # tLearned_nmf_Frame=pd.DataFrame(tLearned_nmf, columns=item_ids, index=user_ids)
+        for k_u in tTest.keys():
+            for k_i in tTest[k_u].keys():
+                tTest_error_mf += (tLearned_mf_Frame.at[k_u, k_i] - tTest[k_u][k_i])**2            
+        print("test error(mf):" + str(tTest_error_mf))
+        print('RMSE(mf):'+str(np.sqrt(tTest_error_mf/tNum_Test_Data)))
+        # 値が埋まっている所を小さな値にしておく
+        tPredicted_X = tOnes_X * tLearned_mf
+    else:
+        tNMF = non_negative_matrix_factorization.NMF(k=tK,tol=1e-2)
+        # 学習
+        tStart_nmf=time.time()
+        tLearned_nmf=tNMF.fit(tX)
+        tEnd_nmf=time.time()
+        print('NMF学習時間:' + str(tEnd_nmf - tStart_nmf))
 
-    # テスト誤差計算
-    # 辞書に保存しておいた値にアクセス
-    tTest_error_mf=0
-    # tTest_error_nmf=0
+        tLearned_nmf_Frame=pd.DataFrame(tLearned_nmf, columns=item_ids, index=user_ids)
+        # テスト誤差計算
+        tTest_error_nmf=0
+        for k_u in tTest.keys():
+            for k_i in tTest[k_u].keys():
+                tTest_error_nmf += (tLearned_nmf_Frame.at[k_u, k_i] - tTest[k_u][k_i])** 2
 
-    for k_u in tTest.keys():
-        for k_i in tTest[k_u].keys():
-            tTest_error_mf += (tLearned_mf_Frame.at[k_u, k_i] - tTest[k_u][k_i])**2
-            # tTest_error_nmf += (tLearned_nmf_Frame.at[k_u, k_i] - tTest[k_u][k_i])** 2
-    print("test error(mf):"+str(tTest_error_mf))
-    # print("test error(nmf):" + str(tTest_error_nmf))
-    
+        print("test error(nmf):" + str(tTest_error_nmf))
+        print('RMSE(nmf):' + str(np.sqrt(tTest_error_nmf / tNum_Test_Data)))
+        # 値が埋まっている所を小さな値にしておく
+        tPredicted_X = tOnes_X * tLearned_nmf
+        
     print('テストデータ数:' + str(tNum_Test_Data))
-    print('RMSE(mf):'+str(np.sqrt(tTest_error_mf/tNum_Test_Data)))
-    # print('RMSE(nmf):'+str(np.sqrt(tTest_error_nmf/tNum_Test_Data)))
-
-
-    # 値が埋まっている所を小さな値にしておく
-    # tPredicted_X = tOnes_X * tLearned_mf
-
+    
     # 出力：推薦されるアイテム
-    # tColumns = tX_Frame.columns.values
-    # tRows = tX_Frame.index.values
-    # for i,j in zip(tPredicted_X.argmax(1),range(tC)):
-    #     print("User["+str(tRows[j])+"]:"+"item["+str(tColumns[i])+"]")
+    tColumns = tX_Frame.columns.values
+    tRows = tX_Frame.index.values
+    for i,j in zip(tPredicted_X.argmax(1),range(tC)):
+        print("User["+str(tRows[j])+"]:"+"item["+str(tColumns[i])+"]")
 
 

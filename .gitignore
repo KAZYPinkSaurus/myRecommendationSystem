@@ -1,4 +1,4 @@
 data/
 output/
 .DS_Store
-learning/__pycache__/
+learning/__pycache__

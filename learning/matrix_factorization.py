@@ -1,7 +1,7 @@
 import numpy as np
 import random
 class MF():
-    def __init__(self, k=10, tol=1e-4,max_iter=500,alpha=0.002,gamma=0.002,adam=False):
+    def __init__(self, k=10, tol=1e-4,max_iter=500,alpha=0.002,gamma=0.0001,adam=True):
         self.k=k #行列分解幅
         self.tol=tol #収束の基準(誤差の減少率)
         self.max_iter=max_iter #重み更新の最大回数
@@ -36,19 +36,20 @@ class MF():
             self.t = i+1
             self.__error()
             # 二乗誤差出力
-            print(self.error)
             print("step:" + str(i) + " 誤差減少率:" + str(1 - (self.error / self.ex_error)))    
             # 誤差の減少率がself.tol以下になったら収束とみなす
-            # if (1 - self.error/self.ex_error < self.tol):
-            #     print("収束，"+"二乗誤差:"+str(self.error))
-            #     return np.dot(self.P.T, self.Q)
+            if (1 - self.error/self.ex_error < self.tol):
+                print("収束，" + "二乗誤差:" + str(self.error))
+                tPtQ = np.dot(self.P.T, self.Q)
+                return tPtQ
             self.__update()
             self.ex_error = self.error
             self.gamma = self.eta/(self.t)
 
-        print("iter終了，"+"二乗誤差:"+str(self.error))
-        return np.dot(self.P.T, self.Q)
-    
+        print("iter終了，" + "二乗誤差:" + str(self.error))
+        tPtQ = np.dot(self.P.T, self.Q)
+        return tPtQ
+
     # 誤差計算
     def __error(self):
         tPtQ = np.dot(self.P.T, self.Q)
@@ -58,12 +59,12 @@ class MF():
         tEr = np.linalg.norm(tEr)** 2
         # 正則化項
         tReg = self.alpha * (np.linalg.norm(self.P)** 2 + np.linalg.norm(self.Q)** 2)
-        
         self.error = tEr + tReg    
         return self.error
         
     # p,qの更新(サイクリックに勾配降下法)
     def __update(self):
+        # Adam
         if self.adam:
             tPtQ = np.dot(self.P.T, self.Q)
             tE = self.X - tPtQ
@@ -87,6 +88,7 @@ class MF():
                             tV_h_q = self.v_q / (1 - self.b_2 ** self.t)
                             self.Q[:, i] += -self.a * tM_h_q / (np.sqrt(tV_h_q) + self.eps)
         else:
+            # 学習率をイテレーション回数で割っていく
             tPtQ = np.dot(self.P.T, self.Q)
             tE = self.X - tPtQ
             for u in range(self.P.shape[1]):
