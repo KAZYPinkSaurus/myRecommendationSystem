@@ -36,7 +36,7 @@ class MF():
             self.t = i+1
             self.__error()
             # 二乗誤差出力
-            print("step:" + str(i) + " 誤差減少率:" + str(1 - (self.error / self.ex_error)))    
+            # print("step:" + str(i) + " 誤差減少率:" + str(1 - (self.error / self.ex_error)))    
             # 誤差の減少率がself.tol以下になったら収束とみなす
             if (1 - self.error/self.ex_error < self.tol):
                 print("収束，" + "二乗誤差:" + str(self.error))

@@ -2,3 +2,11 @@ data/
 output/
 .DS_Store
 learning/__pycache__
+setup.py
+dist/
+learning.egg-info/
+MANIFEST.in
+requirements.txt
+README.txt
+.pypirc
+build/
