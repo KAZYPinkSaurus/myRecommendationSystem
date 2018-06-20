@@ -1,7 +1,7 @@
 # myRecommendationSystem
 - matrix factorization または　non-negative matrix factorizationを用いた推薦システム
 
-## install
+## install(mf,nmf)
 - pip install learning==0.0.dev0
 
 ## use
